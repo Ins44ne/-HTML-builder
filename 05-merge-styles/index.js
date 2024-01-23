@@ -13,15 +13,18 @@ fs.readdir(startFolder, (err, files) => {
 
   const cssFiles = files.filter((file) => path.extname(file) === '.css');
 
-  const stylesArray = cssFiles.map((file) => {
+  Promise.all(cssFiles.map((file) => {
     const filePath = path.join(startFolder, file);
-    return fs.readFileSync(filePath, 'utf8');
+    return fs.promises.readFile(filePath, 'utf8');
+  })).then((stylesArray) => {
+    const comboStyles = stylesArray.join('\n');
+
+    const resultPath = path.join(resultFolder, outputFile);
+
+    return fs.promises.writeFile(resultPath, comboStyles, 'utf8');
+  }).then(() => {
+    console.log('Bundle.css has been successfully created.');
+  }).catch((error) => {
+    console.error('Error:', error);
   });
-
-  const comboStyles = stylesArray.join('\n');
-
-  const resultPath = path.join(resultFolder, outputFile);
-  fs.writeFileSync(resultPath, comboStyles, 'utf8');
-
-  console.log('Bundle.css has been successfully created.');
 });
